@@ -1,0 +1,20 @@
+{
+  "name": "abaptimemachine",
+  "version": "1.0.0",
+  "description": "[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=abapinho_abapTimeMachine&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=abapinho_abapTimeMachine)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+     "downport": "rm -rf downport && cp src -r downport && abaplint --fix abaplint_downport.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thorsten-wolf-neptune/abapTimeMachine.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/thorsten-wolf-neptune/abapTimeMachine/issues"
+  },
+  "homepage": "https://github.com/thorsten-wolf-neptune/abapTimeMachine#readme"
+}

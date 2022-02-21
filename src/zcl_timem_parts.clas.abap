@@ -78,67 +78,101 @@ CLASS ZCL_TIMEM_PARTS IMPLEMENTATION.
   METHOD constructor.
     me->object_type = object_type.
     me->object_name = object_name.
-    me->userexits = NEW #( ).
+    CREATE OBJECT me->userexits.
     me->options = zcl_timem_options=>get_instance( ).
     load( ).
   ENDMETHOD.
 
 
   METHOD get_data.
-    DATA(t_part) =
-      VALUE ztimem_part_source_t(
-        FOR part IN parts
-        ( name = part->name
-        type = part->vrsd_type
-        object_name = part->vrsd_name
-        lines = part->get_source( ) ) ).
+    DATA temp1 TYPE ztimem_part_source_t.
+    DATA temp2 LIKE LINE OF temp1.
+    DATA part LIKE LINE OF parts.
+    DATA t_part LIKE temp1.
+    DATA temp3 TYPE ztimem_data.
+    LOOP AT parts INTO part.
+
+      temp2-name = part->name.
+      temp2-type = part->vrsd_type.
+      temp2-object_name = part->vrsd_name.
+      temp2-lines = part->get_source( ).
+      APPEND temp2 TO temp1.
+    ENDLOOP.
+
+    t_part = temp1.
     DELETE t_part WHERE lines IS INITIAL.
 
     " The custom fields and anything else related to the parts must be edited at this point
     " because it can affect the aggregated results (timestamps, stats and summaries)
     userexits->modify_parts( CHANGING parts = t_part ).
 
-    result = VALUE #( name = object_name
-                       type = object_type
-                       version = zcl_timem_consts=>version
-                       parts = t_part
-                       timestamps = get_timestamps( )
-                       stats = get_stats( t_part )
-                       timestamp = options->timestamp
-                       summaries = get_summaries( get_lines( t_part ) )
-                       ignore_case = options->ignore_case
-                       ignore_indentation = options->ignore_indentation ).
+
+    temp3-name = object_name.
+    temp3-type = object_type.
+    temp3-version = zcl_timem_consts=>version.
+    temp3-parts = t_part.
+    temp3-timestamps = get_timestamps( ).
+    temp3-stats = get_stats( t_part ).
+    temp3-timestamp = options->timestamp.
+    temp3-summaries = get_summaries( get_lines( t_part ) ).
+    temp3-ignore_case = options->ignore_case.
+    temp3-ignore_indentation = options->ignore_indentation.
+    result = temp3.
   ENDMETHOD.
 
 
   METHOD get_lines.
-    result = VALUE ztimem_line_t(
-      FOR part IN parts
-      FOR line IN part-lines
-      ( line ) ).
+    DATA temp4 TYPE ztimem_line_t.
+    DATA part LIKE LINE OF parts.
+    LOOP AT parts INTO part.
+      APPEND line TO temp4.
+    ENDLOOP.
+    result = temp4.
   ENDMETHOD.
 
 
   METHOD get_stats.
-    result = NEW zcl_timem_stats( get_lines( parts ) )->stats.
+    DATA temp6 TYPE REF TO zcl_timem_stats.
+    CREATE OBJECT temp6 TYPE zcl_timem_stats EXPORTING lines = get_lines( parts ).
+    result = temp6->stats.
   ENDMETHOD.
 
 
   METHOD get_summaries.
-    result = VALUE #(
-      ( NEW zcl_timem_summary( 'AUTHOR' )->build( lines ) )
-      ( NEW zcl_timem_summary( 'REQUEST' )->build( lines ) )
-      ( NEW zcl_timem_summary( 'CUSTOM1' )->build( lines ) )
-      ( NEW zcl_timem_summary( 'CUSTOM2' )->build( lines ) )
-      ( NEW zcl_timem_summary( 'CUSTOM3' )->build( lines ) ) ).
+    DATA temp7 TYPE ztimem_summary_t.
+    DATA temp1 TYPE REF TO zcl_timem_summary.
+    DATA temp2 TYPE REF TO zcl_timem_summary.
+    DATA temp3 TYPE REF TO zcl_timem_summary.
+    DATA temp4 TYPE REF TO zcl_timem_summary.
+    DATA temp5 TYPE REF TO zcl_timem_summary.
+    CREATE OBJECT temp1 TYPE zcl_timem_summary EXPORTING fieldname = 'AUTHOR'.
+    APPEND temp1->build( lines ) TO temp7.
+
+    CREATE OBJECT temp2 TYPE zcl_timem_summary EXPORTING fieldname = 'REQUEST'.
+    APPEND temp2->build( lines ) TO temp7.
+
+    CREATE OBJECT temp3 TYPE zcl_timem_summary EXPORTING fieldname = 'CUSTOM1'.
+    APPEND temp3->build( lines ) TO temp7.
+
+    CREATE OBJECT temp4 TYPE zcl_timem_summary EXPORTING fieldname = 'CUSTOM2'.
+    APPEND temp4->build( lines ) TO temp7.
+
+    CREATE OBJECT temp5 TYPE zcl_timem_summary EXPORTING fieldname = 'CUSTOM3'.
+    APPEND temp5->build( lines ) TO temp7.
+    result = temp7.
   ENDMETHOD.
 
 
   METHOD get_timestamps.
     " Gather timestamps from all parts
-    LOOP AT parts INTO DATA(part).
-      DATA(t_timestamp_part) = part->get_timestamps( ).
-      LOOP AT t_timestamp_part INTO DATA(ts).
+    DATA part LIKE LINE OF parts.
+    DATA t_timestamp_part TYPE ztimem_timestamp_t.
+    DATA ts LIKE LINE OF t_timestamp_part.
+    LOOP AT parts INTO part.
+
+      t_timestamp_part = part->get_timestamps( ).
+
+      LOOP AT t_timestamp_part INTO ts.
         COLLECT ts INTO result.
       ENDLOOP.
     ENDLOOP.
@@ -147,18 +181,28 @@ CLASS ZCL_TIMEM_PARTS IMPLEMENTATION.
 
 
   METHOD load.
-    DATA(object) = NEW zcl_timem_object_factory( )->get_instance( object_type = object_type
+    DATA object TYPE REF TO zif_timem_object.
+    DATA temp6 TYPE REF TO zcl_timem_object_factory.
+    DATA part_list TYPE ztimem_part_t.
+    DATA s_part TYPE REF TO ztimem_part.
+    DATA part TYPE REF TO zcl_timem_part.
+    CREATE OBJECT temp6 TYPE zcl_timem_object_factory.
+    object = temp6->get_instance( object_type = object_type
                                                                   object_name = object_name ).
 
-    DATA(part_list) = object->get_part_list( ).
+
+
+    part_list = object->get_part_list( ).
 
     userexits->modify_part_list( CHANGING part_list = part_list ).
 
-    LOOP AT part_list REFERENCE INTO DATA(s_part).
+
+    LOOP AT part_list REFERENCE INTO s_part.
       TRY.
-          DATA(part) = NEW zcl_timem_part( name      = s_part->name
-                                           vrsd_name = s_part->object_name
-                                           vrsd_type = s_part->type ).
+
+          CREATE OBJECT part TYPE zcl_timem_part EXPORTING name = s_part->name
+                                                           vrsd_name = s_part->object_name
+                                                           vrsd_type = s_part->type.
           INSERT part INTO TABLE parts.
         CATCH zcx_timem.
           " Doesn't exist? Carry on
@@ -169,7 +213,8 @@ CLASS ZCL_TIMEM_PARTS IMPLEMENTATION.
 
 
   METHOD revert.
-    LOOP AT parts INTO DATA(part).
+    DATA part LIKE LINE OF parts.
+    LOOP AT parts INTO part.
       part->revert( ts ).
     ENDLOOP.
   ENDMETHOD.

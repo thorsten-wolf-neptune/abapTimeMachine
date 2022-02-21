@@ -52,16 +52,19 @@ CLASS ZCL_TIMEM_GUI IMPLEMENTATION.
     me->object_type = object_type.
     me->object_name = object_name.
     load_parts( ).
-    me->handler = NEW #( me ).
-    me->viewer = NEW #( handler ).
+    CREATE OBJECT me->handler EXPORTING gui = me.
+    CREATE OBJECT me->viewer EXPORTING io_handler = handler.
   ENDMETHOD.
 
 
   METHOD deduplicate_header_fields.
     DATA previous TYPE ztimem_line.
 
-    LOOP AT data-parts REFERENCE INTO DATA(part).
-      LOOP AT part->lines REFERENCE INTO DATA(line).
+    DATA part TYPE REF TO ztimem_part_source.
+    DATA line TYPE REF TO ztimem_line.
+    LOOP AT data-parts REFERENCE INTO part.
+
+      LOOP AT part->lines REFERENCE INTO line.
         IF line->line_num <> 1 AND line->version_number = previous-version_number.
           CLEAR line->author.
           CLEAR line->author_name.
@@ -82,8 +85,12 @@ CLASS ZCL_TIMEM_GUI IMPLEMENTATION.
 
 
   METHOD display.
-    DATA(data) = parts->get_data( ).
-    NEW zcl_timem_userexits( )->before_rendering( CHANGING data = data ).
+    DATA data TYPE ztimem_data.
+    DATA temp1 TYPE REF TO zcl_timem_userexits.
+    data = parts->get_data( ).
+
+    CREATE OBJECT temp1 TYPE zcl_timem_userexits.
+    temp1->before_rendering( CHANGING data = data ).
     highlight_source( CHANGING data = data ).
     deduplicate_header_fields( CHANGING data = data ).
     viewer->render( data ).
@@ -91,19 +98,28 @@ CLASS ZCL_TIMEM_GUI IMPLEMENTATION.
 
 
   METHOD highlight_source.
-    DATA(highlighter) = NEW zcl_timem_syntax_abap( ).
+    DATA highlighter TYPE REF TO zcl_timem_syntax_abap.
+    DATA part TYPE REF TO ztimem_part_source.
+    DATA line TYPE REF TO ztimem_line.
+    DATA temp2 TYPE string.
+    CREATE OBJECT highlighter TYPE zcl_timem_syntax_abap.
 
-    LOOP AT data-parts REFERENCE INTO DATA(part).
-      LOOP AT part->lines REFERENCE INTO DATA(line).
-        line->source = highlighter->process_line(  CONV #( line->source ) ).
+
+
+    LOOP AT data-parts REFERENCE INTO part.
+
+      LOOP AT part->lines REFERENCE INTO line.
+
+        temp2 = line->source.
+        line->source = highlighter->process_line(  temp2 ).
       ENDLOOP.
     ENDLOOP.
   ENDMETHOD.
 
 
   METHOD load_parts.
-    me->parts = NEW zcl_timem_parts( object_type = object_type
-                                     object_name = object_name ).
+    CREATE OBJECT me->parts TYPE zcl_timem_parts EXPORTING object_type = object_type
+                                                           object_name = object_name.
   ENDMETHOD.
 
 

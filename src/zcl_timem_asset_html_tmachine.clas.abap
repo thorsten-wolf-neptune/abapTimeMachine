@@ -1,26 +1,26 @@
 "! Renders the main HTML page from a Transformation which receives the deep
 "! structure with all the required data
-class ZCL_TIMEM_ASSET_HTML_TMACHINE definition
-  public
-  final
-  create private
+CLASS zcl_timem_asset_html_tmachine DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PRIVATE
 
-  global friends ZCL_TIMEM_ASSET_FACTORY .
+  GLOBAL FRIENDS zcl_timem_asset_factory .
 
-public section.
+  PUBLIC SECTION.
 
-  interfaces ZIF_TIMEM_ASSET .
+    INTERFACES zif_timem_asset .
 
     "! Constructor for the main HTML asset
     "! @parameter is_parts | Deep structure containing all the information that
     "! is to be rendered as HTML.
-  methods CONSTRUCTOR
-    importing
-      !DATA type ZTIMEM_DATA .
+    METHODS constructor
+    IMPORTING
+      !data TYPE ztimem_data .
   PROTECTED SECTION.
-private section.
+  PRIVATE SECTION.
 
-  data DATA type ZTIMEM_DATA .
+    DATA data TYPE ztimem_data .
 ENDCLASS.
 
 

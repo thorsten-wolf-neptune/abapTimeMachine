@@ -103,26 +103,42 @@ CLASS ZCL_TIMEM_OBJECT_FUGR IMPLEMENTATION.
       RAISE EXCEPTION TYPE zcx_timem.
     ENDIF.
 
-    result = VALUE #( (
-      name        = |Program { main_program }|
-      object_name = CONV #( main_program )
-      type        = 'REPS' ) ).
+    DATA temp1 TYPE ztimem_part_t.
+    DATA temp2 LIKE LINE OF temp1.
+    temp2-name = |Program { main_program }|.
+    DATA temp7 TYPE undefined.
+    temp7 = main_program.
+    temp2-object_name = temp7.
+    temp2-type = 'REPS'.
+    APPEND temp2 TO temp1.
+    result = temp1.
 
     DATA(t_function) = get_functions( ).
-    LOOP AT t_include INTO DATA(include).
+    DATA include LIKE LINE OF t_include.
+    LOOP AT t_include INTO include.
       IF NOT line_exists( t_function[ include = include ] ).
-        result = VALUE #( BASE result
-                         ( name        = |Include { include }|
-                           object_name = CONV #( include )
-                           type        = 'REPS' ) ).
+        DATA temp3 TYPE ztimem_part_t.
+        DATA temp4 LIKE LINE OF temp3.
+        temp4-name = |Include { include }|.
+        DATA temp8 TYPE undefined.
+        temp8 = include.
+        temp4-object_name = temp8.
+        temp4-type = 'REPS'.
+        APPEND temp4 TO temp3.
+        result = temp3.
       ENDIF.
     ENDLOOP.
 
     LOOP AT t_function REFERENCE INTO DATA(os_function).
-      result = VALUE #( BASE result
-                         ( name        = |Function module { os_function->funcname }|
-                           object_name = CONV #( os_function->funcname )
-                           type        = 'FUNC' ) ).
+      DATA temp5 TYPE ztimem_part_t.
+      DATA temp6 LIKE LINE OF temp5.
+      temp6-name = |Function module { os_function->funcname }|.
+      DATA temp9 TYPE undefined.
+      temp9 = os_function->funcname.
+      temp6-object_name = temp9.
+      temp6-type = 'FUNC'.
+      APPEND temp6 TO temp5.
+      result = temp5.
     ENDLOOP.
   ENDMETHOD.
 ENDCLASS.

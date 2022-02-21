@@ -70,6 +70,8 @@ CLASS zcl_timem_vrsd IMPLEMENTATION.
     DATA locked TYPE trparflag.
     DATA s_tlock_key TYPE tlock_int.
     DATA s_tlock TYPE tlock.
+    DATA temp1 TYPE e071.
+    DATA s_e071 LIKE temp1.
 
     CALL FUNCTION 'TR_GET_PGMID_FOR_OBJECT'
       EXPORTING
@@ -83,9 +85,12 @@ CLASS zcl_timem_vrsd IMPLEMENTATION.
       RAISE EXCEPTION TYPE zcx_timem.
     ENDIF.
 
-    DATA(s_e071) = VALUE e071( pgmid = s_ko100-pgmid
-                               object = me->type
-                               obj_name = me->name ).
+
+    temp1-pgmid = s_ko100-pgmid.
+    temp1-object = me->type.
+    temp1-obj_name = me->name.
+
+    s_e071 = temp1.
     CALL FUNCTION 'TR_CHECK_TYPE'
       EXPORTING
         wi_e071     = s_e071
@@ -128,11 +133,14 @@ CLASS zcl_timem_vrsd IMPLEMENTATION.
   METHOD load_active_or_modified.
     DATA vrsd TYPE vrsd.
 
-    DATA(obj) = VALUE svrs2_versionable_object(
-      objtype = me->type
-      data_pointer = me->type
-      objname = me->name
-      header_only = abap_true ).
+    DATA temp2 TYPE svrs2_versionable_object.
+    DATA obj LIKE temp2.
+    temp2-objtype = me->type.
+    temp2-data_pointer = me->type.
+    temp2-objname = me->name.
+    temp2-header_only = abap_true.
+
+    obj = temp2.
 
     CALL FUNCTION 'SVRS_INITIALIZE_DATAPOINTER'
       CHANGING
@@ -183,6 +191,7 @@ CLASS zcl_timem_vrsd IMPLEMENTATION.
 
   METHOD load_from_table.
     DATA: versno_range TYPE RANGE OF versno.
+    FIELD-SYMBOLS <s_vrsd> LIKE LINE OF me->vrsd_list.
 
     IF options->ignore_unreleased = abap_true.
       versno_range = VALUE #(
@@ -199,7 +208,8 @@ CLASS zcl_timem_vrsd IMPLEMENTATION.
       ORDER BY PRIMARY KEY.
 
     " We consider the current version to be 99998 instead of 0
-    LOOP AT me->vrsd_list ASSIGNING FIELD-SYMBOL(<s_vrsd>)
+
+    LOOP AT me->vrsd_list ASSIGNING <s_vrsd>
       WHERE versno = zcl_timem_version=>c_version-latest_db.
       <s_vrsd>-versno = zcl_timem_version=>c_version-latest.
     ENDLOOP.

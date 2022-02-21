@@ -117,7 +117,7 @@ CLASS ZCL_TIMEM_VERSION IMPLEMENTATION.
 
     load_source( ).
 
-    LOOP AT gt_source INTO DATA(source_int).
+    LOOP AT gt_source INTO data(source_int).
       s_line-line_num = sy-tabix.
       s_line-source = source_int.
       INSERT s_line INTO TABLE result.
@@ -178,7 +178,7 @@ CLASS ZCL_TIMEM_VERSION IMPLEMENTATION.
         trdir_tab   = t_trdir
       EXCEPTIONS
         no_version  = 1
-        OTHERS      = 2.
+    OTHERS      = 2.
     IF sy-subrc <> 0.
       " Ignore errors, just exit.
       ASSERT 1 = 1.
@@ -187,7 +187,7 @@ CLASS ZCL_TIMEM_VERSION IMPLEMENTATION.
 
 
   METHOD retrieve.
-    DATA(real_version) = get_real_version( ).
+    data(real_version) = get_real_version( ).
     SUBMIT rsedtve1 AND RETURN                           "#EC CI_SUBMIT
              WITH objtype = vrsd-objtype
              WITH objname = vrsd-objname

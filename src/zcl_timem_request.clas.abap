@@ -61,20 +61,27 @@ CLASS ZCL_TIMEM_REQUEST IMPLEMENTATION.
       IMPORTING
         es_cofile = cofile.
 
-    LOOP AT cofile-systems INTO DATA(system).
+    DATA system LIKE LINE OF cofile-systems.
+    LOOP AT cofile-systems INTO system.
+      DATA temp1 TYPE undefined.
+      IF action-date > dt(8) AND action-time > dt+8.
+        temp1 = |{ action-date DATE = RAW }{ action-time TIME = RAW }|.
+      ELSE.
+        temp1 = dt.
+      ENDIF.
       datetime = REDUCE #(
         INIT: dt = '00000000000000'
         FOR step IN system-steps
         FOR action IN step-actions
-        NEXT dt = COND #(
-        WHEN action-date > dt(8) AND action-time > dt+8
-        THEN |{ action-date DATE = RAW }{ action-time TIME = RAW }| ELSE dt ) ).
-      result = VALUE #(
-        BASE result
-        ( sysid = system-systemid
-          subrc = system-rc
-          date = datetime(8)
-          time = datetime+8(6) ) ).
+        NEXT dt = temp1 ).
+      DATA temp2 TYPE zcl_timem_request=>ty_t_system.
+      DATA temp3 LIKE LINE OF temp2.
+      temp3-sysid = system-systemid.
+      temp3-subrc = system-rc.
+      temp3-date = datetime(8).
+      temp3-time = datetime+8(6).
+      APPEND temp3 TO temp2.
+      result = temp2.
     ENDLOOP.
   ENDMETHOD.
 
@@ -86,7 +93,7 @@ CLASS ZCL_TIMEM_REQUEST IMPLEMENTATION.
     LEFT JOIN e07t ON e07t~trkorr = e070~trkorr
     WHERE e070~trkorr = @id
     ORDER BY as4text, trstatus.
-      EXIT.
+      RETURN.
     ENDSELECT.
     IF sy-subrc <> 0.
       RAISE EXCEPTION TYPE zcx_timem.

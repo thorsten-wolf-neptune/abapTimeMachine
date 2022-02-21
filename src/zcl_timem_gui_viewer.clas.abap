@@ -59,7 +59,9 @@ CLASS ZCL_TIMEM_GUI_VIEWER IMPLEMENTATION.
 
 
   METHOD add_asset.
-    DATA(content) = asset->get_content( ).
+    DATA content TYPE string.
+    DATA xstr TYPE xstring.
+    content = asset->get_content( ).
 
     userexits->modify_asset_content(
        EXPORTING
@@ -67,9 +69,10 @@ CLASS ZCL_TIMEM_GUI_VIEWER IMPLEMENTATION.
        CHANGING
          content = content ).
 
-    DATA(xstr) = string_2_xstring( content ).
 
-    DATA(t_bintab) = xstring_2_bintab( xstr ).
+    xstr = string_2_xstring( content ).
+
+    data(t_bintab) = xstring_2_bintab( xstr ).
 
     html_viewer->load_data(
       EXPORTING
@@ -93,9 +96,9 @@ CLASS ZCL_TIMEM_GUI_VIEWER IMPLEMENTATION.
 
 
   METHOD constructor.
-    userexits = NEW #( ).
-    html_viewer = NEW cl_gui_html_viewer( parent                   = cl_gui_container=>screen0
-                                          query_table_disabled     = abap_true ).
+    CREATE OBJECT userexits.
+    CREATE OBJECT html_viewer TYPE cl_gui_html_viewer EXPORTING parent = cl_gui_container=>screen0
+                                                                query_table_disabled = abap_true.
     register_events( io_handler ).
   ENDMETHOD.
 
@@ -110,10 +113,13 @@ CLASS ZCL_TIMEM_GUI_VIEWER IMPLEMENTATION.
 
 
   METHOD render.
+    DATA temp1 TYPE REF TO zcl_timem_asset_factory.
     " Creates the screen0 container
     SKIP.
 
-    add_asset( NEW zcl_timem_asset_factory( )->create_instance(
+
+    CREATE OBJECT temp1 TYPE zcl_timem_asset_factory.
+    add_asset( temp1->create_instance(
       asset_type = zcl_timem_consts=>asset_type-css
       data       = data ) ).
 

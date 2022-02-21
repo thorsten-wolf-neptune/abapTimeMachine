@@ -44,9 +44,17 @@ CLASS ZCL_TIMEM_OBJECT_PROG IMPLEMENTATION.
 
 
   METHOD zif_timem_object~get_part_list.
-    result = VALUE #( (
-      name        = CONV #( name )
-      object_name = CONV #( name )
-      type        = 'REPS' ) ).
+    DATA temp1 TYPE ztimem_part_t.
+    DATA temp2 LIKE LINE OF temp1.
+    DATA temp3 TYPE undefined.
+    DATA temp4 TYPE undefined.
+    temp3 = name.
+    temp2-name = temp3.
+
+    temp4 = name.
+    temp2-object_name = temp4.
+    temp2-type = 'REPS'.
+    APPEND temp2 TO temp1.
+    result = temp1.
   ENDMETHOD.
 ENDCLASS.

@@ -1,25 +1,25 @@
 "! Representation of a class object. It will be able to create and return a list
 "! of all the parts the class is made of.
-class ZCL_TIMEM_OBJECT_CLAS definition
-  public
-  final
-  create public .
+CLASS zcl_timem_object_clas DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC .
 
-public section.
+  PUBLIC SECTION.
 
-  interfaces ZIF_TIMEM_OBJECT .
+    INTERFACES zif_timem_object .
 
     "! Constructor for the class object.
     "! @parameter i_name | Class name
-  methods CONSTRUCTOR
-    importing
-      !NAME type SEOCLSNAME
-    raising
-      ZCX_TIMEM .
-protected section.
-private section.
+    METHODS constructor
+    IMPORTING
+      !name TYPE seoclsname
+    RAISING
+      zcx_timem .
+  PROTECTED SECTION.
+  PRIVATE SECTION.
 
-  data NAME type SEOCLSNAME .
+    DATA name TYPE seoclsname .
 ENDCLASS.
 
 
@@ -52,23 +52,72 @@ CLASS ZCL_TIMEM_OBJECT_CLAS IMPLEMENTATION.
 
   METHOD zif_timem_object~get_part_list.
     " All sort of includes
-    result = VALUE #(
-      ( name = 'Class pool'                  object_name = CONV #( name )                                  type = 'CLSD' )
-      ( name = 'Public section'              object_name = CONV #( name )                                  type = 'CPUB' )
-      ( name = 'Protected section'           object_name = CONV #( name )                                  type = 'CPRO' )
-      ( name = 'Private section'             object_name = CONV #( name )                                  type = 'CPRI' )
-      ( name = 'Local class definition'      object_name = cl_oo_classname_service=>get_ccdef_name( name ) type = 'CDEF' )
-      ( name = 'Local class implementation'  object_name = cl_oo_classname_service=>get_ccimp_name( name ) type = 'CINC' )
-      ( name = 'Local macros'                object_name = cl_oo_classname_service=>get_ccmac_name( name ) type = 'CINC' )
-      ( name = 'Local types'                 object_name = cl_oo_classname_service=>get_cl_name( name )    type = 'REPS' )
-      ( name = 'Local test classes'          object_name = cl_oo_classname_service=>get_ccau_name( name )  type = 'CINC' ) ).
+    DATA temp1 TYPE ztimem_part_t.
+    DATA temp2 LIKE LINE OF temp1.
+    DATA temp5 TYPE undefined.
+    DATA temp6 TYPE undefined.
+    DATA temp7 TYPE undefined.
+    DATA temp8 TYPE undefined.
+    DATA temp3 TYPE ztimem_part_t.
+    DATA method_include LIKE LINE OF temp9.
+    DATA temp4 LIKE LINE OF temp3.
+    temp2-name = 'Class pool'.
+
+    temp5 = name.
+    temp2-object_name = temp5.
+    temp2-type = 'CLSD'.
+    APPEND temp2 TO temp1.
+    temp2-name = 'Public section'.
+
+    temp6 = name.
+    temp2-object_name = temp6.
+    temp2-type = 'CPUB'.
+    APPEND temp2 TO temp1.
+    temp2-name = 'Protected section'.
+
+    temp7 = name.
+    temp2-object_name = temp7.
+    temp2-type = 'CPRO'.
+    APPEND temp2 TO temp1.
+    temp2-name = 'Private section'.
+
+    temp8 = name.
+    temp2-object_name = temp8.
+    temp2-type = 'CPRI'.
+    APPEND temp2 TO temp1.
+    temp2-name = 'Local class definition'.
+    temp2-object_name = cl_oo_classname_service=>get_ccdef_name( name ).
+    temp2-type = 'CDEF'.
+    APPEND temp2 TO temp1.
+    temp2-name = 'Local class implementation'.
+    temp2-object_name = cl_oo_classname_service=>get_ccimp_name( name ).
+    temp2-type = 'CINC'.
+    APPEND temp2 TO temp1.
+    temp2-name = 'Local macros'.
+    temp2-object_name = cl_oo_classname_service=>get_ccmac_name( name ).
+    temp2-type = 'CINC'.
+    APPEND temp2 TO temp1.
+    temp2-name = 'Local types'.
+    temp2-object_name = cl_oo_classname_service=>get_cl_name( name ).
+    temp2-type = 'REPS'.
+    APPEND temp2 TO temp1.
+    temp2-name = 'Local test classes'.
+    temp2-object_name = cl_oo_classname_service=>get_ccau_name( name ).
+    temp2-type = 'CINC'.
+    APPEND temp2 TO temp1.
+    result = temp1.
 
     " Class methods
-    result = VALUE #( BASE result
-      FOR method_include IN cl_oo_classname_service=>get_all_method_includes( name )
-      LET method_name = cl_oo_classname_service=>get_method_by_include( method_include-incname )-cpdname
-      IN ( name        = |{ to_lower( method_name ) }()|
-           object_name = |{ name WIDTH = 30 }{ method_name }|
-           type        = 'METH' ) ).
+
+    data(temp9) = cl_oo_classname_service=>get_all_method_includes( name ).
+
+    LOOP AT temp9 INTO method_include.
+
+      temp4-name = |{ to_lower( method_name ) }()|.
+      temp4-object_name = |{ name WIDTH = 30 }{ method_name }|.
+      temp4-type = 'METH'.
+      APPEND temp4 TO temp3.
+    ENDLOOP.
+    result = temp3.
   ENDMETHOD.
 ENDCLASS.

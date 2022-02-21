@@ -41,14 +41,34 @@ CLASS ZCL_TIMEM_OBJECT_FACTORY IMPLEMENTATION.
 
 
   METHOD get_instance.
+    DATA temp1 TYPE seoclsname.
+    temp1 = object_name.
+    DATA temp2 TYPE undefined.
+    temp2 = object_name.
+    DATA temp3 TYPE undefined.
+    temp3 = object_name.
+    DATA temp4 TYPE undefined.
+    temp4 = object_name.
+    DATA temp5 TYPE REF TO zcl_timem_object_prog.
+    CREATE OBJECT temp5 TYPE zcl_timem_object_prog EXPORTING NAME = object_name.
+    DATA temp6 TYPE REF TO zcl_timem_object_prog_includes.
+    CREATE OBJECT temp6 TYPE zcl_timem_object_prog_includes EXPORTING NAME = object_name.
+    DATA temp7 TYPE REF TO zcl_timem_object_clas.
+    CREATE OBJECT temp7 TYPE zcl_timem_object_clas EXPORTING NAME = temp1.
+    DATA temp8 TYPE REF TO zcl_timem_object_fugr.
+    CREATE OBJECT temp8 TYPE zcl_timem_object_fugr EXPORTING NAME = temp2.
+    DATA temp9 TYPE REF TO zcl_timem_object_func.
+    CREATE OBJECT temp9 TYPE zcl_timem_object_func EXPORTING NAME = temp3.
+    DATA temp10 TYPE REF TO zcl_timem_object_tr.
+    CREATE OBJECT temp10 TYPE zcl_timem_object_tr ClassDefinitionNotFound.
     result = SWITCH #(
       object_type
-      WHEN gc_object_type-program THEN NEW zcl_timem_object_prog( object_name )
-      WHEN gc_object_type-program_includes THEN NEW zcl_timem_object_prog_includes( object_name )
-      WHEN gc_object_type-class THEN NEW zcl_timem_object_clas( CONV #( object_name ) )
-      WHEN gc_object_type-function_group THEN NEW zcl_timem_object_fugr( CONV #( object_name ) )
-      WHEN gc_object_type-function THEN NEW zcl_timem_object_func( CONV #( object_name ) )
-      WHEN gc_object_type-transport_request THEN NEW zcl_timem_object_tr( CONV #( object_name ) ) ).
+      WHEN gc_object_type-program THEN temp5
+      WHEN gc_object_type-program_includes THEN temp6
+      WHEN gc_object_type-class THEN temp7
+      WHEN gc_object_type-function_group THEN temp8
+      WHEN gc_object_type-function THEN temp9
+      WHEN gc_object_type-transport_request THEN temp10 ).
     IF result IS NOT BOUND OR NOT result->check_exists( ).
       RAISE EXCEPTION TYPE zcx_timem
         EXPORTING

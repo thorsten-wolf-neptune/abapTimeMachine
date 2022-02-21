@@ -1,22 +1,22 @@
 "! Renders a CSS asset which is generated from a Transformation based on
 "! the provided theme name
-class ZCL_TIMEM_ASSET_CSS definition
-  public
-  final
-  create private
+CLASS zcl_timem_asset_css DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PRIVATE
 
-  global friends ZCL_TIMEM_ASSET_FACTORY .
+  GLOBAL FRIENDS zcl_timem_asset_factory .
 
-public section.
+  PUBLIC SECTION.
 
-  interfaces ZIF_TIMEM_ASSET .
+    INTERFACES zif_timem_asset .
 
     "! Constructor for a CSS asset
     "! @parameter theme | Theme name which will determine which transformation to use
     "! to generate the CSS asset
-  methods CONSTRUCTOR
-    importing
-      !theme type ZTIMEM_THEME .
+    METHODS constructor
+    IMPORTING
+      !theme TYPE ztimem_theme .
   PROTECTED SECTION.
   PRIVATE SECTION.
     DATA theme_transformation TYPE char30.
@@ -34,7 +34,8 @@ CLASS ZCL_TIMEM_ASSET_CSS IMPLEMENTATION.
 
   METHOD zif_timem_asset~get_content.
     DATA theme_css TYPE string.
-    DATA(css) = |<css/>|.
+    DATA css TYPE string.
+    css = |<css/>|.
 
     CALL TRANSFORMATION ztimem_css_main
     SOURCE XML css

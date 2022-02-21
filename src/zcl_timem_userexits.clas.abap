@@ -55,7 +55,8 @@ CLASS ZCL_TIMEM_USEREXITS IMPLEMENTATION.
 
 
   METHOD before_rendering.
-    LOOP AT instances INTO DATA(instance).
+    DATA instance LIKE LINE OF instances.
+    LOOP AT instances INTO instance.
       TRY.
           instance->before_rendering(
             EXPORTING
@@ -84,6 +85,7 @@ CLASS ZCL_TIMEM_USEREXITS IMPLEMENTATION.
     DATA impkey TYPE  seoclskey.
     DATA impkeys TYPE seor_implementing_keys.
     DATA o TYPE REF TO zif_timem_userexit.
+    DATA classdata LIKE LINE OF impkeys.
 
     impkey-clsname = 'ZIF_TIMEM_USEREXIT'.
     CALL FUNCTION 'SEO_INTERFACE_IMPLEM_GET_ALL'
@@ -98,7 +100,8 @@ CLASS ZCL_TIMEM_USEREXITS IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    LOOP AT impkeys INTO DATA(classdata).
+
+    LOOP AT impkeys INTO classdata.
       CREATE OBJECT o TYPE (classdata-clsname). "#EC PREF_NEW
       INSERT o INTO TABLE instances.
     ENDLOOP.
@@ -106,7 +109,8 @@ CLASS ZCL_TIMEM_USEREXITS IMPLEMENTATION.
 
 
   METHOD modify_asset_content.
-    LOOP AT instances INTO DATA(instance).
+    DATA instance LIKE LINE OF instances.
+    LOOP AT instances INTO instance.
       TRY.
           instance->modify_asset_content(
             EXPORTING
@@ -123,7 +127,8 @@ CLASS ZCL_TIMEM_USEREXITS IMPLEMENTATION.
 
 
   METHOD modify_parts.
-    LOOP AT instances INTO DATA(instance).
+    DATA instance LIKE LINE OF instances.
+    LOOP AT instances INTO instance.
       TRY.
           instance->modify_parts(
             EXPORTING
@@ -139,7 +144,8 @@ CLASS ZCL_TIMEM_USEREXITS IMPLEMENTATION.
 
 
   METHOD modify_part_list.
-    LOOP AT instances INTO DATA(instance).
+    DATA instance LIKE LINE OF instances.
+    LOOP AT instances INTO instance.
       TRY.
           instance->modify_part_list(
             EXPORTING
@@ -155,7 +161,8 @@ CLASS ZCL_TIMEM_USEREXITS IMPLEMENTATION.
 
 
   METHOD modify_summary.
-    LOOP AT instances INTO DATA(instance).
+    DATA instance LIKE LINE OF instances.
+    LOOP AT instances INTO instance.
       TRY.
           instance->modify_summary(
             EXPORTING
@@ -171,7 +178,8 @@ CLASS ZCL_TIMEM_USEREXITS IMPLEMENTATION.
 
 
   METHOD on_sapevent.
-    LOOP AT instances INTO DATA(instance).
+    DATA instance LIKE LINE OF instances.
+    LOOP AT instances INTO instance.
       TRY.
           instance->on_sapevent(
             options  = options

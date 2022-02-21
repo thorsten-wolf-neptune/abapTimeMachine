@@ -39,7 +39,9 @@ INITIALIZATION.
     p_mblame = abap_true.
   ENDIF.
   link = 'More details at https://github.com/abapinho/abapTimeMachine' ##NO_TEXT.
-  NEW zcl_timem_dynpro( '1001' )->remove_toolbar( ).
+  DATA temp1 TYPE REF TO zcl_timem_dynpro.
+  CREATE OBJECT temp1 TYPE zcl_timem_dynpro EXPORTING dynnr = '1001'.
+  temp1->remove_toolbar( ).
 
 AT SELECTION-SCREEN OUTPUT.
   LOOP AT SCREEN.
@@ -49,7 +51,9 @@ AT SELECTION-SCREEN OUTPUT.
     ENDIF.
   ENDLOOP.
 
-  NEW zcl_timem_dynpro( '1001' )->hide_buttons( ).
+  DATA temp2 TYPE REF TO zcl_timem_dynpro.
+  CREATE OBJECT temp2 TYPE zcl_timem_dynpro EXPORTING dynnr = '1001'.
+  temp2->hide_buttons( ).
 
 START-OF-SELECTION.
   " Convert radio button to mode
@@ -59,19 +63,25 @@ START-OF-SELECTION.
     ELSE zcl_timem_consts=>mode-time_machine ).
 
   TRY.
+      DATA temp3 TYPE timestamp.
+      temp3 = |{ p_date }{ p_time }|.
       zcl_timem_options=>get_instance( )->set( mode               = mode
                                                ignore_case        = p_icase
                                                ignore_indentation = p_iinde
-                                               timestamp = CONV #( |{ p_date }{ p_time }| )
+                                               timestamp = temp3
                                                ignore_unreleased  = p_iunre ).
 
-      NEW zcl_timem_run( )->go( object_type = p_otype
+      DATA temp4 TYPE REF TO zcl_timem_run.
+      CREATE OBJECT temp4 TYPE zcl_timem_run.
+      temp4->go( object_type = p_otype
                                 object_name = p_name ).
 
       CALL SELECTION-SCREEN 1001.
       LEAVE SCREEN.
 
-    CATCH zcx_timem INTO DATA(exc).
-      DATA(text) = exc->get_text( ).
+      DATA exc TYPE REF TO zcx_timem.
+    CATCH zcx_timem INTO exc.
+      DATA text TYPE string.
+      text = exc->get_text( ).
       MESSAGE text TYPE 'I' DISPLAY LIKE 'E'.
   ENDTRY.

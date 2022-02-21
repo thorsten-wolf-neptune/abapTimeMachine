@@ -43,16 +43,24 @@ CLASS ZCL_TIMEM_OBJECT_TR IMPLEMENTATION.
 
 
   METHOD get_object.
-    result = COND #(
-      WHEN object_key-pgmid = 'R3TR' AND ( object_key-object = 'CLAS' OR object_key-object = 'FUGR' )
-        OR object_key-pgmid = 'LIMU' AND object_key-object = 'FUNC'
-      THEN NEW zcl_timem_object_factory( )->get_instance(
-        object_type = object_key-object
-        object_name = CONV #( object_key-obj_name ) )
-      WHEN object_key-pgmid = 'LIMU' AND object_key-object = 'REPS'
-      THEN NEW zcl_timem_object_factory( )->get_instance(
-        object_type = 'PROG'
-        object_name = CONV #( object_key-obj_name ) ) ).
+    DATA temp1 TYPE undefined.
+    DATA temp2 TYPE undefined.
+    temp1 = object_key-obj_name.
+
+    temp2 = object_key-obj_name.
+    DATA temp3 TYPE undefined.
+    IF object_key-pgmid = 'R3TR' AND ( object_key-object = 'CLAS' OR object_key-object = 'FUGR' ) OR object_key-pgmid = 'LIMU' AND object_key-object = 'FUNC'.
+      DATA uniqueErrorSpag TYPE REF TO zcl_timem_object_factory.
+      CREATE OBJECT uniqueErrorSpag TYPE zcl_timem_object_factory.
+      temp3 = uniqueErrorSpag->get_instance( object_type = object_key-object
+                                             object_name = temp1 ).
+    IF object_key-pgmid = 'LIMU' AND object_key-object = 'REPS'.
+      DATA uniqueErrorSpag TYPE REF TO zcl_timem_object_factory.
+      CREATE OBJECT uniqueErrorSpag TYPE zcl_timem_object_factory.
+      temp3 = uniqueErrorSpag->get_instance( object_type = 'PROG'
+                                             object_name = temp2 ).
+    ENDIF.
+    result = temp3.
   ENDMETHOD.
 
 
@@ -78,8 +86,11 @@ CLASS ZCL_TIMEM_OBJECT_TR IMPLEMENTATION.
 
 
   METHOD zif_timem_object~check_exists.
+    DATA temp2 TYPE REF TO zcl_timem_request.
     TRY.
-        NEW zcl_timem_request( me->id ).
+
+        CREATE OBJECT temp2 TYPE zcl_timem_request EXPORTING id = me->id.
+        temp2.
         result = abap_true.
       CATCH zcx_timem.
         result = abap_false.
@@ -93,10 +104,18 @@ CLASS ZCL_TIMEM_OBJECT_TR IMPLEMENTATION.
 
 
   METHOD zif_timem_object~get_part_list.
-    LOOP AT get_object_keys( ) INTO DATA(object_key).
-      DATA(object) = get_object( object_key ).
+      DATA object TYPE REF TO zif_timem_object.
+    DATA object_key LIKE LINE OF temp3.
+    data(temp3) = get_object_keys( ).
+
+    LOOP AT temp3 INTO object_key.
+
+      object = get_object( object_key ).
       IF object IS BOUND.
-        LOOP AT object->get_part_list( ) INTO DATA(part).
+        DATA temp4 TYPE ztimem_part_t.
+        temp4 = object->get_part_list( ).
+        DATA part LIKE LINE OF temp4.
+        LOOP AT temp4 INTO part.
           part-name = |({ object->get_name( ) }) { part-name }|.
           INSERT part INTO TABLE result.
         ENDLOOP.

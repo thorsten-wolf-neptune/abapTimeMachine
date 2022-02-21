@@ -55,18 +55,20 @@ CLASS ZCL_TIMEM_STATS IMPLEMENTATION.
 
 
   METHOD constructor.
-    stats = VALUE #(
-      total_lines = lines( lines )
-      comment_lines = get_comment_lines( lines )
-      empty_lines = get_empty_lines( lines )
-      date_oldest = get_date_oldest( lines )
-      date_latest = get_date_latest( lines ) ).
+    DATA temp1 TYPE ztimem_stats.
+    temp1-total_lines = lines( lines ).
+    temp1-comment_lines = get_comment_lines( lines ).
+    temp1-empty_lines = get_empty_lines( lines ).
+    temp1-date_oldest = get_date_oldest( lines ).
+    temp1-date_latest = get_date_latest( lines ).
+    stats = temp1.
   ENDMETHOD.
 
 
   METHOD get_comment_lines.
     DATA first_char TYPE char1.
-    LOOP AT lines REFERENCE INTO DATA(line).
+    DATA line TYPE REF TO ztimem_line.
+    LOOP AT lines REFERENCE INTO line.
       first_char = shift_left( line->source ).
       IF first_char CO '*"'.
         result = result + 1.
@@ -76,8 +78,10 @@ CLASS ZCL_TIMEM_STATS IMPLEMENTATION.
 
 
   METHOD get_date_latest.
+    DATA line TYPE REF TO ztimem_line.
     result = '00000000'.
-    LOOP AT lines REFERENCE INTO DATA(line).
+
+    LOOP AT lines REFERENCE INTO line.
       IF line->date > result.
         result = line->date.
       ENDIF.
@@ -86,8 +90,10 @@ CLASS ZCL_TIMEM_STATS IMPLEMENTATION.
 
 
   METHOD get_date_oldest.
+    DATA line TYPE REF TO ztimem_line.
     result = '999999999'.
-    LOOP AT lines REFERENCE INTO DATA(line).
+
+    LOOP AT lines REFERENCE INTO line.
       IF line->date < result.
         result = line->date.
       ENDIF.
@@ -96,7 +102,8 @@ CLASS ZCL_TIMEM_STATS IMPLEMENTATION.
 
 
   METHOD get_empty_lines.
-    DATA(lines_aux) = lines.
+    DATA lines_aux LIKE lines.
+    lines_aux = lines.
     DELETE lines_aux WHERE source IS NOT INITIAL.
     result = lines( lines_aux ).
   ENDMETHOD.

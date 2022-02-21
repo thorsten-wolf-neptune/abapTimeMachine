@@ -66,18 +66,35 @@ CLASS ZCL_TIMEM_OBJECT_PROG_INCLUDES IMPLEMENTATION.
 
 
   METHOD zif_timem_object~get_part_list.
-    result = VALUE #( (
-      name        = CONV #( name )
-      object_name = CONV #( name )
-      type        = 'REPS' ) ).
+    DATA temp1 TYPE ztimem_part_t.
+    DATA temp2 LIKE LINE OF temp1.
+    DATA includes TYPE zcl_timem_object_prog_includes=>ty_t_rpy_repo.
+    DATA temp5 TYPE undefined.
+    DATA temp6 TYPE undefined.
+    DATA temp3 TYPE ztimem_part_t.
+    DATA include LIKE LINE OF includes.
+    DATA temp4 LIKE LINE OF temp3.
+    temp5 = name.
+    temp2-name = temp5.
 
-    DATA(includes) = get_includes( ).
+    temp6 = name.
+    temp2-object_name = temp6.
+    temp2-type = 'REPS'.
+    APPEND temp2 TO temp1.
+    result = temp1.
 
-    result = VALUE #(
-      BASE result
-      FOR include IN includes
-      ( name = include-title
-        object_name = include-inclname
-        type = 'REPS' ) ).
+
+    includes = get_includes( ).
+
+
+
+    LOOP AT includes INTO include.
+
+      temp4-name = include-title.
+      temp4-object_name = include-inclname.
+      temp4-type = 'REPS'.
+      APPEND temp4 TO temp3.
+    ENDLOOP.
+    result = temp3.
   ENDMETHOD.
 ENDCLASS.

@@ -57,12 +57,15 @@ CLASS ZCL_TIMEM_OPTIONS IMPLEMENTATION.
 
 
   METHOD class_constructor.
-    instance = NEW #( ).
+    DATA temp1 TYPE timestamp.
+    CREATE OBJECT instance.
+
+    temp1 = |{ sy-datum }235959|.
     instance->set(
       mode               = zcl_timem_consts=>mode-blame
       ignore_case        = abap_false
       ignore_indentation = abap_false
-      timestamp          = CONV #( |{ sy-datum }235959| )
+      timestamp          = temp1
       theme              = zcl_timem_gui_viewer=>c_theme-light ).
   ENDMETHOD.
 

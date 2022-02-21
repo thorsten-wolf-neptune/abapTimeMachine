@@ -58,10 +58,11 @@ CLASS ZCL_TIMEM_DIFF IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    DATA(t_delta) = compute_delta( lines_old = lines_old lines_new = lines_new ).
+    data(t_delta) = compute_delta( lines_old = lines_old
+                                   lines_new = lines_new ).
 
     DO.
-      READ TABLE t_delta INTO DATA(s_delta) WITH KEY number = old_index.
+      READ TABLE t_delta INTO data(s_delta) WITH KEY number = old_index.
       IF sy-subrc = 0.
         DELETE t_delta INDEX sy-tabix.
 
@@ -109,8 +110,8 @@ CLASS ZCL_TIMEM_DIFF IMPLEMENTATION.
     DATA t_trdirtab_new TYPE TABLE OF trdir.
     DATA t_trdir_delta  TYPE TABLE OF xtrdir.
 
-    DATA(t_source_old) = get_source( lines_old ).
-    DATA(t_source_new) = get_source( lines_new ).
+    data(t_source_old) = get_source( lines_old ).
+    data(t_source_new) = get_source( lines_new ).
 
     CALL FUNCTION 'SVRS_COMPUTE_DELTA_REPS'
       TABLES
@@ -124,9 +125,15 @@ CLASS ZCL_TIMEM_DIFF IMPLEMENTATION.
 
 
   METHOD get_source.
-    result = VALUE abaptxt255_tab(
-      FOR s_line IN it_line
-      ( line = process_line( s_line-source ) ) ).
+    DATA temp1 TYPE abaptxt255_tab.
+    DATA temp2 LIKE LINE OF temp1.
+    DATA s_line LIKE LINE OF it_line.
+    LOOP AT it_line INTO s_line.
+
+      temp2-line = process_line( s_line-source ).
+      APPEND temp2 TO temp1.
+    ENDLOOP.
+    result = temp1.
   ENDMETHOD.
 
 

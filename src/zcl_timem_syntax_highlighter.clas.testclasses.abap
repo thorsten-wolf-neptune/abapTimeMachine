@@ -122,7 +122,8 @@ CLASS ltcl_syntax_cases IMPLEMENTATION.
     " Generate table with expected values after ordering
     _generate_extend 'C' 0  39 ''.
 
-    do_test( iv_line = lv_line iv_filename = '*.abap' ).
+    do_test( iv_line = lv_line
+             iv_filename = '*.abap' ).
 
   ENDMETHOD.
 
@@ -149,7 +150,8 @@ CLASS ltcl_syntax_cases IMPLEMENTATION.
     _generate_extend 'K' 18 4  ''.
     _generate_extend '.' 22 8  ''.
 
-    do_test( iv_line = lv_line iv_filename = '*.abap' ).
+    do_test( iv_line = lv_line
+             iv_filename = '*.abap' ).
 
   ENDMETHOD.
 
@@ -185,7 +187,8 @@ CLASS ltcl_syntax_cases IMPLEMENTATION.
     _generate_extend '.' 23 2  ''.
     _generate_extend 'C' 25 11 ''.
 
-    do_test( iv_line = lv_line iv_filename = '*.abap' ).
+    do_test( iv_line = lv_line
+             iv_filename = '*.abap' ).
 
   ENDMETHOD.
 
@@ -222,7 +225,8 @@ CLASS ltcl_syntax_cases IMPLEMENTATION.
     _generate_extend 'T' 36 28 ''''.
     _generate_extend '.' 64 1  ''.
 
-    do_test( iv_line = lv_line iv_filename = '*.abap' ).
+    do_test( iv_line = lv_line
+             iv_filename = '*.abap' ).
 
   ENDMETHOD.
 
@@ -261,7 +265,8 @@ CLASS ltcl_syntax_cases IMPLEMENTATION.
     _generate_extend 'T' 16 1  '}'.
     _generate_extend '.' 17 1  ''.
 
-    do_test( iv_line = lv_line iv_filename = '*.abap' ).
+    do_test( iv_line = lv_line
+             iv_filename = '*.abap' ).
 
   ENDMETHOD.
 
@@ -318,7 +323,8 @@ CLASS ltcl_syntax_cases IMPLEMENTATION.
     _generate_extend '.' 52 2  ''.
     _generate_extend 'T' 54 1  '}'.
 
-    do_test( iv_line = lv_line iv_filename = '*.abap' ).
+    do_test( iv_line = lv_line
+             iv_filename = '*.abap' ).
 
   ENDMETHOD.
 
@@ -345,7 +351,8 @@ CLASS ltcl_syntax_cases IMPLEMENTATION.
     _generate_extend 'K' 9  4 ''.
     _generate_extend '.' 13 4 ''.
 
-    do_test( iv_line = lv_line iv_filename = '*.abap' ).
+    do_test( iv_line = lv_line
+             iv_filename = '*.abap' ).
 
   ENDMETHOD.
 
@@ -365,7 +372,8 @@ CLASS ltcl_syntax_cases IMPLEMENTATION.
     " Generate table with expected values after extending
     _generate_extend '.' 0  27 ''.
 
-    do_test( iv_line = lv_line iv_filename = '*.abap' ).
+    do_test( iv_line = lv_line
+             iv_filename = '*.abap' ).
 
   ENDMETHOD.
 
@@ -393,7 +401,8 @@ CLASS ltcl_syntax_cases IMPLEMENTATION.
     _generate_extend '.' 5  4 ''.
     _generate_extend 'X' 9  6 '<'.
 
-    do_test( iv_line = lv_line iv_filename = '*.xml' ).
+    do_test( iv_line = lv_line
+             iv_filename = '*.xml' ).
 
   ENDMETHOD.
 
@@ -413,7 +422,8 @@ CLASS ltcl_syntax_cases IMPLEMENTATION.
     " Generate table with expected values after extending
     _generate_extend 'X' 0  6 '<'.
 
-    do_test( iv_line = lv_line iv_filename = '*.xml' ).
+    do_test( iv_line = lv_line
+             iv_filename = '*.xml' ).
 
   ENDMETHOD.
 
@@ -442,7 +452,8 @@ CLASS ltcl_syntax_cases IMPLEMENTATION.
     _generate_extend 'V' 15 7 ''.
     _generate_extend 'X' 22 2 '>'.
 
-    do_test( iv_line = lv_line iv_filename = '*.xml' ).
+    do_test( iv_line = lv_line
+             iv_filename = '*.xml' ).
 
   ENDMETHOD.
 
@@ -471,7 +482,8 @@ CLASS ltcl_syntax_cases IMPLEMENTATION.
     _generate_extend 'V' 14 5 ''.
     _generate_extend 'X' 19 2 '>'.
 
-    do_test( iv_line = lv_line iv_filename = '*.xml' ).
+    do_test( iv_line = lv_line
+             iv_filename = '*.xml' ).
 
   ENDMETHOD.
 
@@ -513,7 +525,8 @@ CLASS ltcl_syntax_cases IMPLEMENTATION.
     _generate_extend '.' 30 6 ''.
     _generate_extend 'X' 36 9 '<'.
 
-    do_test( iv_line = lv_line iv_filename = '*.xml' ).
+    do_test( iv_line = lv_line
+             iv_filename = '*.xml' ).
 
   ENDMETHOD.
 
@@ -539,7 +552,8 @@ CLASS ltcl_syntax_cases IMPLEMENTATION.
     _generate_extend '.' 13 1 ''.
     _generate_extend 'V' 14 4 ''.
 
-    do_test( iv_line = lv_line iv_filename = '*.xml' ).
+    do_test( iv_line = lv_line
+             iv_filename = '*.xml' ).
   ENDMETHOD.
 
   METHOD test_xml_07.
@@ -568,7 +582,8 @@ CLASS ltcl_syntax_cases IMPLEMENTATION.
     _generate_extend 'V' 15 7 ''.
     _generate_extend 'X' 22 2 '>'.
 
-    do_test( iv_line = lv_line iv_filename = '*.xml' ).
+    do_test( iv_line = lv_line
+             iv_filename = '*.xml' ).
 
 
   ENDMETHOD.
@@ -594,7 +609,8 @@ CLASS ltcl_syntax_cases IMPLEMENTATION.
     _generate_extend '.' 9 1 ''.
     _generate_extend 'V' 10 5 ''.
 
-    do_test( iv_line = lv_line iv_filename = '*.xml' ).
+    do_test( iv_line = lv_line
+             iv_filename = '*.xml' ).
 
   ENDMETHOD.
 

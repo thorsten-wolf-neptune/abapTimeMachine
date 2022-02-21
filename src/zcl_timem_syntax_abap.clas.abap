@@ -1,33 +1,33 @@
 "! Class which implements a syntax highlighter for ABAP. It was copied from
 "! the abapGit project as-is and used here as a black box that just works :)
-class ZCL_TIMEM_SYNTAX_ABAP definition
-  public
-  inheriting from ZCL_TIMEM_SYNTAX_HIGHLIGHTER
-  create public .
+CLASS zcl_timem_syntax_abap DEFINITION
+  PUBLIC
+  INHERITING FROM zcl_timem_syntax_highlighter
+  CREATE PUBLIC .
 
-public section.
+  PUBLIC SECTION.
 
-  constants:
+    CONSTANTS:
     BEGIN OF c_css,
         keyword TYPE string VALUE 'keyword',                "#EC NOTEXT
         text    TYPE string VALUE 'text',                   "#EC NOTEXT
         comment TYPE string VALUE 'comment',                "#EC NOTEXT
       END OF c_css .
-  constants:
+    CONSTANTS:
     BEGIN OF c_token,
         keyword TYPE c VALUE 'K',                           "#EC NOTEXT
         text    TYPE c VALUE 'T',                           "#EC NOTEXT
         comment TYPE c VALUE 'C',                           "#EC NOTEXT
       END OF c_token .
-  constants:
+    CONSTANTS:
     BEGIN OF c_regex,
         comment TYPE string VALUE '##|"|^\*',
         text    TYPE string VALUE '`|''|\||\{|\}',
         keyword TYPE string VALUE '&&|\b[-_a-z0-9]+\b',
       END OF c_regex .
 
-  class-methods CLASS_CONSTRUCTOR .
-  methods CONSTRUCTOR .
+    CLASS-METHODS class_constructor .
+    METHODS constructor .
   PROTECTED SECTION.
 
     CLASS-DATA gt_keywords TYPE HASHED TABLE OF string WITH UNIQUE KEY table_line.
@@ -203,12 +203,14 @@ CLASS ZCL_TIMEM_SYNTAX_ABAP IMPLEMENTATION.
     DATA lv_prev_token TYPE c.
 
     FIELD-SYMBOLS <ls_prev>  TYPE ty_match.
+    FIELD-SYMBOLS <ls_match> LIKE LINE OF ct_matches.
 
     SORT ct_matches BY offset ASCENDING.
 
     lv_line_len = strlen( iv_line ).
 
-    LOOP AT ct_matches ASSIGNING FIELD-SYMBOL(<ls_match>).
+
+    LOOP AT ct_matches ASSIGNING <ls_match>.
       lv_index = sy-tabix.
 
       " Delete matches after open text match
@@ -220,7 +222,9 @@ CLASS ZCL_TIMEM_SYNTAX_ABAP IMPLEMENTATION.
       CASE <ls_match>-token.
         WHEN c_token-keyword.
           IF <ls_match>-offset > 0
-              AND substring( val = iv_line off = ( <ls_match>-offset - 1 ) len = 1 ) CA '-<'.
+              AND substring( val = iv_line
+                             off = ( <ls_match>-offset - 1 )
+                             len = 1 ) CA '-<'.
             " Delete match if keyword is part of structure or field symbol
             DELETE ct_matches INDEX lv_index.
             CONTINUE.
@@ -267,12 +271,16 @@ CLASS ZCL_TIMEM_SYNTAX_ABAP IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD parse_line. "REDEFINITION
+  METHOD parse_line.
+    FIELD-SYMBOLS <ls_match> LIKE LINE OF result.
+    DATA lv_index LIKE sy-tabix. "REDEFINITION
     result = super->parse_line( iv_line ).
 
     " Remove non-keywords
-    LOOP AT result ASSIGNING FIELD-SYMBOL(<ls_match>) WHERE token = c_token-keyword.
-      DATA(lv_index) = sy-tabix.
+
+    LOOP AT result ASSIGNING <ls_match> WHERE token = c_token-keyword.
+
+      lv_index = sy-tabix.
       IF abap_false = is_keyword( substring( val = iv_line
                                              off = <ls_match>-offset
                                              len = <ls_match>-length ) ).

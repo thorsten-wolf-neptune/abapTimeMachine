@@ -60,27 +60,36 @@ CLASS ZCL_TIMEM_GUI_HANDLER IMPLEMENTATION.
 
   METHOD constructor.
     me->gui = gui.
-    userexits = NEW #( ).
+    CREATE OBJECT userexits.
   ENDMETHOD.
 
 
   METHOD decode_source_type_and_name.
     DATA mtdkey TYPE seocpdkey.
+    DATA temp1 TYPE undefined.
+    DATA temp2 TYPE undefined.
+    DATA temp3 TYPE undefined.
     SPLIT i_getdata AT '|' INTO e_type e_object_name.
     SHIFT e_type LEFT DELETING LEADING space.
     SHIFT e_object_name LEFT DELETING LEADING space.
 
     CASE e_type.
       WHEN 'CPUB'.
-        e_object_name = cl_oo_classname_service=>get_pubsec_name( CONV #( e_object_name ) ).
+
+        temp1 = e_object_name.
+        e_object_name = cl_oo_classname_service=>get_pubsec_name( temp1 ).
         e_type = 'PROG'.
 
       WHEN 'CPRO'.
-        e_object_name = cl_oo_classname_service=>get_prosec_name( CONV #( e_object_name ) ).
+
+        temp2 = e_object_name.
+        e_object_name = cl_oo_classname_service=>get_prosec_name( temp2 ).
         e_type = 'PROG'.
 
       WHEN 'CPRI'.
-        e_object_name = cl_oo_classname_service=>get_prisec_name( CONV #( e_object_name ) ).
+
+        temp3 = e_object_name.
+        e_object_name = cl_oo_classname_service=>get_prisec_name( temp3 ).
         e_type = 'PROG'.
 
       WHEN 'CDEF' OR 'CINC' OR 'CMAC' OR 'REPS' OR 'CCAU'.
@@ -153,19 +162,29 @@ CLASS ZCL_TIMEM_GUI_HANDLER IMPLEMENTATION.
 
   METHOD on_sapevent.
     DATA ts TYPE timestamp.
+    DATA temp4 TYPE undefined.
+    DATA temp5 TYPE trkorr.
+    DATA temp6 TYPE timestamp.
+    DATA temp7 TYPE timestamp.
 
     action = condense( action ).
     getdata = condense( getdata ).
     CASE action.
       WHEN 'author'.
-        display_user( CONV #( getdata ) ).
+
+        temp4 = getdata.
+        display_user( temp4 ).
 
       WHEN 'request'.
-        display_request( CONV #( getdata ) ).
+
+        temp5 = getdata.
+        display_request( temp5 ).
 
       WHEN 'revert'.
         " Revert to the requested timestmap
-        ts = CONV #( getdata+7 ).
+
+        temp6 = getdata+7.
+        ts = temp6.
         revert( ts ).
         " And then display the new present time
         GET TIME STAMP FIELD ts.
@@ -177,14 +196,20 @@ CLASS ZCL_TIMEM_GUI_HANDLER IMPLEMENTATION.
           EXPORTING
             i_getdata = getdata
           IMPORTING
-            e_type = DATA(type)
-            e_object_name = DATA(object_name) ).
+            e_type = data(type)
+            e_object_name = data(object_name) ).
         display_source( type        = type
                         object_name = object_name ).
 
       WHEN 'timestamp'.
         " Depending on the link, getdata may be just the timestamp xxx or be like timestamp=xxx
-        ts = COND #( WHEN getdata(10) = 'timestamp=' THEN getdata+10 ELSE getdata ).
+
+        IF getdata(10) = 'timestamp='.
+          temp7 = getdata+10.
+        ELSE.
+          temp7 = getdata.
+        ENDIF.
+        ts = temp7.
         zcl_timem_options=>get_instance( )->set( timestamp = ts ).
         display_version( ).
 
@@ -197,10 +222,14 @@ CLASS ZCL_TIMEM_GUI_HANDLER IMPLEMENTATION.
 
 
   METHOD revert.
+    DATA exc TYPE REF TO zcx_timem.
+    DATA text TYPE string.
     TRY.
         gui->revert( ts ).
-      CATCH zcx_timem INTO DATA(exc).
-        DATA(text) = exc->get_text( ).
+
+      CATCH zcx_timem INTO exc.
+
+        text = exc->get_text( ).
         MESSAGE text TYPE 'E'.
     ENDTRY.
   ENDMETHOD.

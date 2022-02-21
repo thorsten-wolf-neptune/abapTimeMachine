@@ -1,34 +1,34 @@
 "! Abstract class representing a generic syntax highlighter. It was copied from
 "! the abapGit project as-is and used as a black box that just works :)
-class ZCL_TIMEM_SYNTAX_HIGHLIGHTER definition
-  public
-  abstract
-  create public .
+CLASS zcl_timem_syntax_highlighter DEFINITION
+  PUBLIC
+  ABSTRACT
+  CREATE PUBLIC .
 
-public section.
+  PUBLIC SECTION.
 
-  class-methods CREATE
-    importing
-      !IV_FILENAME type STRING
-    returning
-      value(RO_INSTANCE) type ref to ZCL_TIMEM_SYNTAX_HIGHLIGHTER .
-  methods PROCESS_LINE
-    importing
-      !IV_LINE type STRING
-    returning
-      value(RESULT) type STRING .
-protected section.
+    CLASS-METHODS create
+    IMPORTING
+      !iv_filename TYPE string
+    RETURNING
+      VALUE(ro_instance) TYPE REF TO zcl_timem_syntax_highlighter .
+    METHODS process_line
+    IMPORTING
+      !iv_line TYPE string
+    RETURNING
+      VALUE(result) TYPE string .
+  PROTECTED SECTION.
 
-  types:
+    TYPES:
     BEGIN OF ty_match,
         token    TYPE c LENGTH 1,  " Type of matches
         offset   TYPE i,      " Beginning position of the string that should be formatted
         length   TYPE i,      " Length of the string that should be formatted
         text_tag TYPE string, " Type of text tag
       END OF ty_match .
-  types:
+    TYPES:
     ty_match_tt  TYPE STANDARD TABLE OF ty_match WITH DEFAULT KEY .
-  types:
+    TYPES:
     BEGIN OF ty_rule,
         regex             TYPE REF TO cl_abap_regex,
         token             TYPE c LENGTH 1,
@@ -36,45 +36,45 @@ protected section.
         relevant_submatch TYPE i,
       END OF ty_rule .
 
-  constants C_TOKEN_NONE type C value '.' ##NO_TEXT.
-  data:
+    CONSTANTS c_token_none TYPE c VALUE '.' ##NO_TEXT.
+    DATA:
     mt_rules TYPE STANDARD TABLE OF ty_rule .
 
-  methods ADD_RULE
-    importing
-      !IV_REGEX type STRING
-      !IV_TOKEN type C
-      !IV_STYLE type STRING
-      !IV_SUBMATCH type I optional .
-  methods PARSE_LINE
-    importing
-      !IV_LINE type STRING
-    returning
-      value(RESULT) type TY_MATCH_TT .
-  methods ORDER_MATCHES
-  abstract
-    importing
-      !IV_LINE type STRING
-    changing
-      !CT_MATCHES type TY_MATCH_TT .
-  methods EXTEND_MATCHES
-    importing
-      !IV_LINE type STRING
-    changing
-      !CT_MATCHES type TY_MATCH_TT .
-  methods FORMAT_LINE
-    importing
-      !IV_LINE type STRING
-      !IT_MATCHES type TY_MATCH_TT
-    returning
-      value(RESULT) type STRING .
-  methods APPLY_STYLE
-    importing
-      !IV_LINE type STRING
-      !IV_CLASS type STRING
-    returning
-      value(RESULT) type STRING .
-private section.
+    METHODS add_rule
+    IMPORTING
+      !iv_regex TYPE string
+      !iv_token TYPE c
+      !iv_style TYPE string
+      !iv_submatch TYPE i OPTIONAL .
+    METHODS parse_line
+    IMPORTING
+      !iv_line TYPE string
+    RETURNING
+      VALUE(result) TYPE ty_match_tt .
+    METHODS order_matches
+  ABSTRACT
+    IMPORTING
+      !iv_line TYPE string
+    CHANGING
+      !ct_matches TYPE ty_match_tt .
+    METHODS extend_matches
+    IMPORTING
+      !iv_line TYPE string
+    CHANGING
+      !ct_matches TYPE ty_match_tt .
+    METHODS format_line
+    IMPORTING
+      !iv_line TYPE string
+      !it_matches TYPE ty_match_tt
+    RETURNING
+      VALUE(result) TYPE string .
+    METHODS apply_style
+    IMPORTING
+      !iv_line TYPE string
+      !iv_class TYPE string
+    RETURNING
+      VALUE(result) TYPE string .
+  PRIVATE SECTION.
 ENDCLASS.
 
 
@@ -86,8 +86,8 @@ CLASS ZCL_TIMEM_SYNTAX_HIGHLIGHTER IMPLEMENTATION.
 
     DATA ls_rule LIKE LINE OF mt_rules.
 
-    ls_rule-regex = NEW #( pattern     = iv_regex
-                           ignore_case = abap_true ).
+    CREATE OBJECT ls_rule-regex EXPORTING pattern = iv_regex
+                                          ignore_case = abap_true.
 
     ls_rule-token         = iv_token.
     ls_rule-style         = iv_style.
@@ -101,7 +101,8 @@ CLASS ZCL_TIMEM_SYNTAX_HIGHLIGHTER IMPLEMENTATION.
 
     DATA lv_escaped TYPE string.
 
-    lv_escaped = escape( val = iv_line  format = cl_abap_format=>e_html_attr ).
+    lv_escaped = escape( val = iv_line
+                         format = cl_abap_format=>e_html_attr ).
     IF iv_class IS NOT INITIAL.
       result = |<span class="{ iv_class }">{ lv_escaped }</span>|.
     ELSE.
@@ -115,7 +116,7 @@ CLASS ZCL_TIMEM_SYNTAX_HIGHLIGHTER IMPLEMENTATION.
 
     " Create instance of highighter dynamically dependent on syntax type
     IF iv_filename CP '*.abap'.
-      ro_instance = NEW zcl_timem_syntax_abap( ).
+      CREATE OBJECT ro_instance TYPE zcl_timem_syntax_abap.
     ELSE.
       CLEAR ro_instance.
     ENDIF.
@@ -129,13 +130,15 @@ CLASS ZCL_TIMEM_SYNTAX_HIGHLIGHTER IMPLEMENTATION.
     DATA lv_last_pos TYPE i VALUE 0.
     DATA lv_length   TYPE i.
     DATA ls_match    TYPE ty_match.
+    FIELD-SYMBOLS <ls_match> LIKE LINE OF ct_matches.
 
     lv_line_len = strlen( iv_line ).
 
     SORT ct_matches BY offset ASCENDING.
 
     " Add entries refering to parts of text that should not be formatted
-    LOOP AT ct_matches ASSIGNING field-symbol(<ls_match>).
+
+    LOOP AT ct_matches ASSIGNING <ls_match>.
       IF <ls_match>-offset > lv_last_pos.
         lv_length = <ls_match>-offset - lv_last_pos.
         ls_match-token  = c_token_none.
@@ -163,8 +166,11 @@ CLASS ZCL_TIMEM_SYNTAX_HIGHLIGHTER IMPLEMENTATION.
     DATA lv_chunk TYPE string.
     DATA ls_rule  LIKE LINE OF mt_rules.
 
-    LOOP AT it_matches ASSIGNING field-symbol(<ls_match>).
-      lv_chunk = substring( val = iv_line off = <ls_match>-offset len = <ls_match>-length ).
+    FIELD-SYMBOLS <ls_match> LIKE LINE OF it_matches.
+    LOOP AT it_matches ASSIGNING <ls_match>.
+      lv_chunk = substring( val = iv_line
+                            off = <ls_match>-offset
+                            len = <ls_match>-length ).
 
       " Failed read equals no style
       CLEAR ls_rule.
@@ -187,13 +193,17 @@ CLASS ZCL_TIMEM_SYNTAX_HIGHLIGHTER IMPLEMENTATION.
     DATA ls_match   TYPE ty_match.
 
     " Process syntax-dependent regex table and find all matches
-    LOOP AT mt_rules ASSIGNING FIELD-SYMBOL(<ls_regex>).
+    FIELD-SYMBOLS <ls_regex> LIKE LINE OF mt_rules.
+    FIELD-SYMBOLS <ls_result> LIKE LINE OF lt_result.
+    FIELD-SYMBOLS <ls_submatch> TYPE submatch_result.
+    LOOP AT mt_rules ASSIGNING <ls_regex>.
       lo_regex   = <ls_regex>-regex.
       lo_matcher = lo_regex->create_matcher( text = iv_line ).
       lt_result  = lo_matcher->find_all( ).
 
       " Save matches into custom table with predefined tokens
-      LOOP AT lt_result ASSIGNING FIELD-SYMBOL(<ls_result>).
+
+      LOOP AT lt_result ASSIGNING <ls_result>.
         CLEAR: ls_match.
         IF <ls_regex>-relevant_submatch = 0.
           ls_match-token  = <ls_regex>-token.
@@ -201,7 +211,8 @@ CLASS ZCL_TIMEM_SYNTAX_HIGHLIGHTER IMPLEMENTATION.
           ls_match-length = <ls_result>-length.
           APPEND ls_match TO result.
         ELSE.
-          READ TABLE <ls_result>-submatches ASSIGNING FIELD-SYMBOL(<ls_submatch>) INDEX <ls_regex>-relevant_submatch.
+
+          READ TABLE <ls_result>-submatches ASSIGNING <ls_submatch> INDEX <ls_regex>-relevant_submatch.
           "submatch might be empty if only discarted parts matched
           IF sy-subrc = 0 AND <ls_submatch>-offset >= 0 AND <ls_submatch>-length > 0.
             ls_match-token  = <ls_regex>-token.

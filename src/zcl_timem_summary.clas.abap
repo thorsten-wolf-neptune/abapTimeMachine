@@ -82,10 +82,13 @@ CLASS ZCL_TIMEM_SUMMARY IMPLEMENTATION.
 
     " Insert if it doesn't yet exist
     IF NOT line_exists( summary_lines[ value = <field> ] ).
-      INSERT VALUE #( value = <field> ) INTO TABLE summary_lines. "#EC CI_SUBRC
+      DATA temp1 TYPE ztimem_summary_line.
+      temp1-value = <field>.
+      INSERT temp1 INTO TABLE summary_lines. "#EC CI_SUBRC
     ENDIF.
 
-    READ TABLE summary_lines ASSIGNING FIELD-SYMBOL(<summary_line>) WITH KEY value = <field>.
+    FIELD-SYMBOLS <summary_line> TYPE ztimem_summary_line.
+    READ TABLE summary_lines ASSIGNING <summary_line> WITH KEY value = <field>.
     IF sy-subrc = 0.
       <summary_line>-line_count = <summary_line>-line_count + 1.
     ENDIF.
@@ -93,17 +96,21 @@ CLASS ZCL_TIMEM_SUMMARY IMPLEMENTATION.
 
 
   METHOD build.
-    result = VALUE #(
-      fieldname = fieldname
-      lines = build_lines( lines )
-      title = |{ fieldname } list|
-      value_title = fieldname ).
-    NEW zcl_timem_userexits( )->modify_summary( CHANGING summary = result ).
+    DATA temp2 TYPE ztimem_summary.
+    temp2-fieldname = fieldname.
+    temp2-lines = build_lines( lines ).
+    temp2-title = |{ fieldname } list|.
+    temp2-value_title = fieldname.
+    result = temp2.
+    DATA temp3 TYPE REF TO zcl_timem_userexits.
+    CREATE OBJECT temp3 TYPE zcl_timem_userexits.
+    temp3->modify_summary( CHANGING summary = result ).
   ENDMETHOD.
 
 
   METHOD build_lines.
-    LOOP AT lines INTO DATA(line).
+    DATA line LIKE LINE OF lines.
+    LOOP AT lines INTO line.
       add_line_to_summary_lines(
         EXPORTING
           line = line
@@ -112,7 +119,12 @@ CLASS ZCL_TIMEM_SUMMARY IMPLEMENTATION.
     ENDLOOP.
 
     " If we only have one line and no value was found... this summary is pointless
-    IF lines( result ) = 1 AND result[ 1 ]-value IS INITIAL.
+    DATA temp4 LIKE LINE OF result.
+    READ TABLE result INDEX 1 INTO temp4.
+    IF sy-subrc <> 0.
+      RAISE EXCEPTION TYPE cx_sy_itab_line_not_found.
+    ENDIF.
+    IF lines( result ) = 1 AND temp4-value IS INITIAL.
       CLEAR result.
     ENDIF.
 
@@ -125,23 +137,32 @@ CLASS ZCL_TIMEM_SUMMARY IMPLEMENTATION.
 
 
   METHOD build_value_request_list.
-    LOOP AT lines INTO DATA(line).
+    DATA line LIKE LINE OF lines.
+    LOOP AT lines INTO line.
       ASSIGN COMPONENT fieldname OF STRUCTURE line TO FIELD-SYMBOL(<field>).
       IF sy-subrc = 0.
         " Store fieldname+request (it will not have duplicates because the table has a UNIQUE KEY
-        INSERT VALUE #( value = <field> request = line-request ) INTO TABLE result.
+        DATA temp5 TYPE zcl_timem_summary=>ty_s_value_request.
+        temp5-value = <field>.
+        temp5-request = line-request.
+        INSERT temp5 INTO TABLE result.
       ENDIF.
     ENDLOOP.
   ENDMETHOD.
 
 
   METHOD calc_missing_data.
-    DATA(total_lines) = total_lines_count( summary_lines ).
-    DATA(value_requests) = build_value_request_list( lines ).
-    LOOP AT summary_lines ASSIGNING FIELD-SYMBOL(<summary_line>).
+    DATA total_lines TYPE int2.
+    total_lines = total_lines_count( summary_lines ).
+    DATA value_requests TYPE zcl_timem_summary=>ty_t_value_request.
+    value_requests = build_value_request_list( lines ).
+    FIELD-SYMBOLS <summary_line> LIKE LINE OF summary_lines.
+    LOOP AT summary_lines ASSIGNING <summary_line>.
       <summary_line>-percentage = <summary_line>-line_count / total_lines.
+      DATA temp6 TYPE string.
+      temp6 = <summary_line>-value.
       <summary_line>-request_count = request_count_for_value(
-        value = CONV #( <summary_line>-value )
+        value = temp6
         value_requests = value_requests ).
     ENDLOOP.
   ENDMETHOD.
@@ -153,18 +174,27 @@ CLASS ZCL_TIMEM_SUMMARY IMPLEMENTATION.
 
 
   METHOD request_count_for_value.
-    result = REDUCE int2(
-      INIT x = 0
-      FOR value_request IN value_requests
-      WHERE ( value = value )
-      NEXT x = x + 1 ).
+    DATA temp7 TYPE int2.
+    DATA x TYPE i.
+    x = 0.
+    DATA value_request LIKE LINE OF value_requests.
+    LOOP AT value_requests INTO value_request.
+      x = x + 1.
+    ENDLOOP.
+    temp7 = x.
+    result = temp7.
   ENDMETHOD.
 
 
   METHOD total_lines_count.
-    result = REDUCE int2(
-      INIT x = 0
-      FOR summary_line IN summary_lines
-      NEXT x = x + summary_line-line_count ).
+    DATA temp8 TYPE int2.
+    DATA x TYPE i.
+    x = 0.
+    DATA summary_line LIKE LINE OF summary_lines.
+    LOOP AT summary_lines INTO summary_line.
+      x = x + summary_line-line_count.
+    ENDLOOP.
+    temp8 = x.
+    result = temp8.
   ENDMETHOD.
 ENDCLASS.

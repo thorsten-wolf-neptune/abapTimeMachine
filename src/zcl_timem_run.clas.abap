@@ -40,6 +40,6 @@ CLASS ZCL_TIMEM_RUN IMPLEMENTATION.
   METHOD on_loading_version_source.
     CALL FUNCTION 'SAPGUI_PROGRESS_INDICATOR'
       EXPORTING
-        text = |Loading { type } { name } { version_number }|.
+    text = |Loading { type } { name } { version_number }|.
   ENDMETHOD.
 ENDCLASS.
